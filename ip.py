@@ -1,6 +1,7 @@
 from flask import Flask, redirect, render_template, request,url_for
 import requests
 import json
+from geopy.geocoders import Nominatim
 
 app = Flask(__name__)
 
@@ -34,6 +35,32 @@ def home():
         return render_template('index.html', country=json_data['country'], phone_code=phone_code[json_data['country']], log=log, lat=lat, count=count)
     else:
         return render_template('index.html', country='', phone_code='', lon='', lat='')
+
+
+
+@app.route('/')
+@app.route('/bank', methods=['POST', 'GET'])
+def bank():
+    if request.method == 'POST':
+        ifsc = request.form['ifsc']
+        print(ifsc)
+        url = "https://ifsc.razorpay.com/"
+        data = requests.get(url + ifsc).json()
+        return render_template('index.html', data=data)
+    return render_template('index.html')
+
+
+
+@app.route('/')
+@app.route('/location', methods=['POST', 'GET'])
+def location():
+    if request.method == 'POST':
+        zipcode = request.form['zipcode']
+        geolocator = Nominatim(user_agent="geoapiExercise")
+        zip_location = geolocator.geocode(zipcode)
+        return render_template('index.html', data=zip_location)
+    return render_template('index.html')
+
 
 
 if __name__ == '__main__':
